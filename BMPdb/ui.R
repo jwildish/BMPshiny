@@ -10,21 +10,34 @@
 
 library(shiny)
 library(shinydashboard)
+library(DT)
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
     headerPanel(title = "Water Quality performance of GI"),
-    sidebarPanel(selectizeInput('x', label = 'GI Type',
+    sidebarPanel(checkboxGroupInput('Type', label = 'GI Type',
                                     choices = unique(Combined$Analysis_Category)),
-                     selectizeInput('y', label = 'WQ Category', 
-                                    choices = unique(Combined$Group)),
-                     selectizeInput("color", label = "WQ Metric", 
+                 selectizeInput('Category', label = 'Water Quality Category',
+                                choices = unique(Combined$Group)),
+                     selectizeInput("Metric", label = "WQ Metric", 
                                     choices = unique(Combined$`WQX Parameter`)),
-                     selectizeInput("dev", label = "GI State", 
-                                    choices = unique(Combined$STATE))
+                     selectizeInput("State", label = "GI COUNTRY", 
+                                    choices = unique(Combined$COUNTRY))
                      
     ),
-    mainPanel(box(plotOutput("mytable"), width = 12),
-              box(textOutput("mywilcox"), width =12)
-    )
+    mainPanel(tabsetPanel(
+        tabPanel("Plot1",htmlOutput("samplesize"), htmlOutput("significant"), 
+                 callModule(downloadablePlot,
+                            "mytable", 
+                            logger = ss_userAction.Log,
+                            filenameroot = "mydownload1",
+                            aspectratio = 1.33,
+                            downloadfxns = list(png = myplotfxn, tsv = mydatafxn),
+                            visibleplot = myplotfxn),
+                 plotOutput("mytable"), 
+                 downloadButton('downloadPlot'), 
+                 div(DT::dataTableOutput("table"), style = "font-size: 75%; width: 75%"))
+
+    ))
 ))
+
 
